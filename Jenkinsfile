@@ -18,41 +18,41 @@ options {
                         parameters([    
                         
                         choice(
-                            choices: ['Dev', 'Sanbox','Prod'], 
+                            choices: ['DEV', 'SANBOX','PROD'], 
                             name: 'Environment'   
                                 ),
 
                           string(
                             defaultValue: 's4user',
-                            name: 'User',
+                            name: 'USER',
 			                description: 'Required to enter your name',
                             trim: true
                             ),
 
                           string(
                             defaultValue: 'eric-001',
-                            name: 'DB-Tag',
+                            name: 'DBTag',
 			                description: 'Required to enter the image tag',
                             trim: true
                             ),
 
                           string(
                             defaultValue: 'eric-001',
-                            name: 'UI-Tag',
+                            name: 'UITag',
 			                description: 'Required to enter the image tag',
                             trim: true
                             ),
 
                           string(
                             defaultValue: 'eric-001',
-                            name: 'WEATHER-Tag',
+                            name: 'WEATHERTag',
 			                description: 'Required to enter the image tag',
                             trim: true
                             ),
 
                           string(
                             defaultValue: 'eric-001',
-                            name: 'AUTH-Tag',
+                            name: 'AUTHTag',
 			                description: 'Required to enter the image tag',
                             trim: true
                             ),
@@ -67,6 +67,7 @@ stage('permission') {
                 sh '''
 cat permission.txt | grep -o $USER
 echo $?
+
                 '''
             }
         }

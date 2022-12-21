@@ -65,20 +65,8 @@ options {
 stage('permission') {
             steps {
                 sh '''
-cat <<EOF > check.sh
-#! /bin/bash 
-USER=${User}
-cat permission.txt | grep -i $USER
-if 
-[[ $? -eq 0 ]]
-then 
-echo "You have permission to run this job"
-else 
-echo "You DON'T have permission to run this job"
-exit 1
-fi 
-EOF
-bash  check.sh
+cat permission.txt | grep -o $USER
+echo $?
                 '''
             }
         }

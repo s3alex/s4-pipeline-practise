@@ -3,6 +3,10 @@ pipeline {
      label ("node1 || node2 ||  node3 || node4 ||  node5 ||  branch ||  main ||  jenkins-node || docker-agent ||  jenkins-docker2 ||  preproduction ||  production")
             }
 
+  environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
+
 options {
     buildDiscarder(logRotator(numToKeepStr: '20'))
     disableConcurrentBuilds()
@@ -171,65 +175,194 @@ cd -
         stage('login') {
             steps {
                 sh '''
-                ls 
-                pwd
+echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u devopseasylearning2021 --password-stdin
                 '''
             }
         }
 
         stage('push-to-dockerhub-dev') {
+          when{ 
+              expression {
+                env.Environment == 'DEV' }
+                }
             steps {
                 sh '''
-                ls 
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
         }
 
         stage('push-to-dockerhub-sanbox') {
+          when{ 
+              expression {
+                env.Environment == 'SANBOX' }
+                }
             steps {
                 sh '''
-                ls 
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
         }
 
         stage('push-to-dockerhub-prod') {
+          when{ 
+              expression {
+                env.Environment == 'PROD' }
+                }
             steps {
                 sh '''
-                ls 
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
         }
 
-        stage('update helm charts-dev') {
-            steps {
-                sh '''
-                ls 
-                pwd
-                '''
+    stage('update helm charts-dev') {
+         when{ 
+          expression {
+            env.Environment == 'DEV' }
             }
-        }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'eric-image', variable: 'TOKEN')
+	          ]) {
 
-        stage('update helm charts-sanbox') {
-            steps {
-                sh '''
-                ls 
-                pwd
-                '''
-            }
-        }
+	            sh '''
+                 git config --global user.name "devopseasylearning"
+                 git config --global user.email info@devopseasylearning.com
+                rm -rf s4-pipeline-practise || true
+                git clone  https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git
+                cd s4-pipeline-practise/CHARTS
+cat <<EOF > dev-values.yaml           
+        image:
+          db:
+             repository: devopseasylearning2021/s4-db
+             tag: "$DBTag"
+          ui:
+             repository: devopseasylearning2021/s4-ui
+             tag: "$UITag"
+          auth:
+             repository: devopseasylearning2021/s4-auth
+             tag: "$AUTHTag"
+          weather:
+             repository: devopseasylearning2021/s4-weather
+             tag: "$WEATHERTag"
+EOF
+                git add -A 
+                git commit -m "testing jenkins"
+                git push https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git
 
-        stage('update helm charts-prod') {
-            steps {
-                sh '''
-                ls 
-                pwd
-                '''
+	            '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+
+    stage('update helm charts-sanbox') {
+         when{ 
+          expression {
+            env.Environment == 'SANBOX' }
             }
-        }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'eric-image', variable: 'TOKEN')
+	          ]) {
+
+	            sh '''
+                 git config --global user.name "devopseasylearning"
+                 git config --global user.email info@devopseasylearning.com
+                rm -rf s4-pipeline-practise || true
+                git clone  https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git
+                cd s4-pipeline-practise/CHARTS
+cat <<EOF > sanbox-values.yaml           
+        image:
+          db:
+             repository: devopseasylearning2021/s4-db
+             tag: "$DBTag"
+          ui:
+             repository: devopseasylearning2021/s4-ui
+             tag: "$UITag"
+          auth:
+             repository: devopseasylearning2021/s4-auth
+             tag: "$AUTHTag"
+          weather:
+             repository: devopseasylearning2021/s4-weather
+             tag: "$WEATHERTag"
+EOF
+                git add -A 
+                git commit -m "testing jenkins"
+                git push https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git
+
+	            '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+
+
+    stage('update helm charts-prod') {
+         when{ 
+          expression {
+            env.Environment == 'PROD' }
+            }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'eric-image', variable: 'TOKEN')
+	          ]) {
+
+	            sh '''
+                 git config --global user.name "devopseasylearning"
+                 git config --global user.email info@devopseasylearning.com
+                rm -rf s4-pipeline-practise || true
+                git clone  https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git
+                cd s4-pipeline-practise/CHARTS
+cat <<EOF > prod-values.yaml           
+        image:
+          db:
+             repository: devopseasylearning2021/s4-db
+             tag: "$DBTag"
+          ui:
+             repository: devopseasylearning2021/s4-ui
+             tag: "$UITag"
+          auth:
+             repository: devopseasylearning2021/s4-auth
+             tag: "$AUTHTag"
+          weather:
+             repository: devopseasylearning2021/s4-weather
+             tag: "$WEATHERTag"
+EOF
+                git add -A 
+                git commit -m "testing jenkins"
+                git push https://devopseasylearning:$TOKEN@github.com/devopseasylearning/s4-pipeline-practise.git || true
+
+	            '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
 
         stage('wait for argocd') {
             steps {

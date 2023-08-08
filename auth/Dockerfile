@@ -7,7 +7,7 @@ WORKDIR /go/src/app/weatherapp/auth/src/main
 RUN go build -o /go/bin/app -v ./...
 
 #final stage
-FROM alpine:latest
+FROM alpine:3.18.3
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/bin/app /app
 ENTRYPOINT /app
